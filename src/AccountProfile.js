@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import axios from 'axios';
 
 // Used to fetch the list of characters
 function AccountProfile() {
     const [accountDetails, setAccountDetails] = useState(null);
-    const storedUser = JSON.parse(sessionStorage.getItem("user"));
+    const storedUser = JSON.parse(sessionStorage.getItem("user"));  
+    const [visible, setVisible] = useState(true);
     const [errors, setErrors] = useState({});
 
     // Form data for the things we can choose   
@@ -31,7 +33,7 @@ function AccountProfile() {
 
     // Getting the details of the user
     useEffect(() => {
-    axios.get('http://127.0.0.1:8000/details/', {headers: {'username': storedUser.username}})
+    axios.get(`http://${process.env.REACT_APP_API_URL}/details/`, {headers: {'username': storedUser.username}})
         .then(response => {
             const data = response.data.message;
             console.log(data);
@@ -51,6 +53,8 @@ function AccountProfile() {
 
     // Updating the first name, last name and email
     const handleUpdateProfile = async () => {
+
+        // Configuring the error messages to display when the user enters invalid input
         const newErrors = {};
 
         if (!formData.firstname) newErrors.firstname = 'First name is required';
@@ -70,7 +74,7 @@ function AccountProfile() {
         };
 
         try {
-            await axios.post('http://127.0.0.1:8000/update_profile/', updateData, {
+            await axios.post(`http://${process.env.REACT_APP_API_URL}/update_profile/`, updateData, {
             headers: { 'Content-Type': 'application/json' }
             });
 
@@ -81,7 +85,7 @@ function AccountProfile() {
             const errMsg = error.response?.data?.errors;
             if (errMsg) {
                 const newErrors = {};
-                if ('email' in errMsg) newErrors.email = 'Email is taken';
+                if ('email' in errMsg) newErrors.email = 'Sorry, this email is already being used. Please try another email.';
                 setErrors(prev => ({ ...prev, ...newErrors }));
             }
         }
@@ -91,7 +95,8 @@ function AccountProfile() {
     // Updating the password
     const handleUpdatePassword = async () => {
         const newErrors = {};
-
+        
+        // Making sure the passwords are matching and a password is being entered, configuring error messages for invalid input
         if (!formData.password) newErrors.password = 'Password is required';
         if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm password';
         if (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) {
@@ -109,7 +114,7 @@ function AccountProfile() {
         };
 
         try {
-            await axios.post('http://127.0.0.1:8000/update_password/', updatePassword, {
+            await axios.post(`http://${process.env.REACT_APP_API_URL}/update_password/`, updatePassword, {
             headers: { 'Content-Type': 'application/json' }
             });
 
@@ -200,44 +205,77 @@ function AccountProfile() {
                 <div style={{ marginBottom: '15px' }}>
 
                     {/*Form to fill out password*/}
-                    <label style={{ display: 'block', marginBottom: '8px' }}>
-                        <strong>New password:</strong>
-                    </label>
                     <div style={{ marginBottom: '15px' }}>
                         <label style={{ display: 'block', marginBottom: '8px' }}>
                             <strong>Password</strong>
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.password}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            style={{
-                            ...inputStyle,
-                            borderColor: errors.password ? 'red' : '#ccc'
-                            }}
-                        />
-                        {errors.password && (
-                            <div style={{ color: 'red', fontSize: '0.8em' }}>{errors.firstname}</div>
-                        )}
+                        </label>         
+                        
+                        {/*Ability to show and hide password*/}                
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                type={visible ? 'text' : 'password'}
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                style={{
+                                ...inputStyle,                          
+                                paddingRight: '10px',
+                                borderColor: errors.password ? 'red' : '#ccc'
+                                }}
+                            />
+                            {errors.password && (
+                                <div style={{ color: 'red', fontSize: '0.8em' }}>{errors.firstname}</div>
+                            )}
+                            <div
+                                onClick={() => setVisible(!visible)}
+                                style={{
+                                position: 'absolute',
+                                top: '50%',
+                                right: '-10px',
+                                transform: 'translateY(-50%)',
+                                cursor: 'pointer',
+                                color: '#888'
+                                }}
+                            >
+                                {visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                            </div>
+                        </div>
                     </div>
                     
                     {/*Form to confirm password */}
                     <div style={{ marginBottom: '15px' }}>
                         <label style={{ display: 'block', marginBottom: '8px' }}>
-                            <strong>Confirm New Password:</strong>
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.confirmPassword}
-                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                            style={{
-                            ...inputStyle,
-                            borderColor: errors.confirmPassword ? 'red' : '#ccc'
-                            }}
-                        />
-                        {errors.confirmPassword && (
-                            <div style={{ color: 'red', fontSize: '0.8em' }}>{errors.confirmPassword}</div>
-                        )}
+                            <strong>Confirm new password</strong>
+                        </label>                     
+
+                        {/*Ability to show and hide password*/}  
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                type={visible ? 'text' : 'password'}
+                                value={formData.confirmPassword}
+                                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                style={{
+                                ...inputStyle,
+                                paddingRight: '10px',
+                                borderColor: errors.confirmPassword ? 'red' : '#ccc'
+                                }}
+                            />
+                            {errors.confirmPassword && (
+                                <div style={{ color: 'red', fontSize: '0.8em' }}>{errors.confirmPassword}</div>
+                            )}
+                            <div
+                                onClick={() => setVisible(!visible)}
+                                style={{
+                                position: 'absolute',
+                                top: '50%',
+                                right: '-10px',
+                                transform: 'translateY(-50%)',
+                                cursor: 'pointer',
+                                color: '#888'
+                                }}
+                            >
+                                {visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <button onClick={handleUpdatePassword} style={buttonStyle}>

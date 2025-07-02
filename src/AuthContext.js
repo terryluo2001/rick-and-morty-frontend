@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
     try {
       
       // Calls the login backend using the username and password
-      const response = await axios.post('http://127.0.0.1:8000/login/', {
+      const response = await axios.post(`http://${process.env.REACT_APP_API_URL}/login/`, {
         userData: username
       }, {
         headers: {
@@ -52,7 +52,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    await axios.post('http://127.0.0.1:8000/logout/', {
+    await axios.post(`http://${process.env.REACT_APP_API_URL}/logout/`, {
       session_id: sessionStorage.getItem("session_id")
     }, {
       headers: {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import { Routes, Route, Link, useNavigate} from 'react-router-dom';
 import Characters from './Characters';
 import CharacterProfile from './CharacterProfile';
@@ -51,6 +52,7 @@ export function Login() {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');       
+  const [visible, setVisible] = useState(false);
   const [error, setError] = useState('');                                        
 
   // Auto-redirect if already logged in
@@ -65,6 +67,7 @@ export function Login() {
     // Checking if a username and password is given
     if (username && password) {
       const result = await login({ username, password }); // Save user to context
+      console.log(result);
       if (!result.success) {
         setError(result.message);
       }
@@ -83,10 +86,38 @@ export function Login() {
         </p>
       )}
       <form onSubmit={handleSubmit}>
+        {/*Username input box */}
         <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} style={inputStyle} />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} />
+        
+        {/*Password input box*/}
+        <div style={{ position: 'relative' }}>
+          <input
+            type={visible ? 'text' : 'password'}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              ... inputStyle,
+              paddingRight: '15px' // ensures input text doesn't overlap icon
+            }}
+          />
+          <div
+            onClick={() => setVisible(!visible)}
+            style={{
+              position: 'absolute',
+              top: '50%',
+              right: '-25px',
+              transform: 'translateY(-50%)',
+              cursor: 'pointer',
+              color: '#888'
+            }}
+          >
+            {visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+          </div>
+        </div>
         <button type="submit" style={buttonStyle}>Login</button>
       </form>
+      
       <p>
         Don't have an account?{" "}
         <Link to="/registration" style={linkStyle}>Register</Link>
@@ -117,20 +148,23 @@ export function Logout() {
   return null;
 }
 
+// Register page
 export function Register() {
+  console.log(`${process.env.REACT_APP_API_URL}`)
   const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');  
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [visible, setVisible] = useState(true);
   const [errors, setErrors] = useState({}); // Error state
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Error for putting the dictionary
+    // Error for putting the dictionary, configured
     const newErrors = {};
     if (!firstName) newErrors.firstName = 'First name required';
     if (!lastName) newErrors.lastName = 'Last name required';
@@ -142,8 +176,9 @@ export function Register() {
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
+    // If successfully registered then navigate to the login page
     try {
-      await axios.post('http://127.0.0.1:8000/register/', {
+      await axios.post(`http://${process.env.REACT_APP_API_URL}/register/`, {
         username,
         password,
         firstname: firstName,
@@ -152,7 +187,7 @@ export function Register() {
       }, {
         headers: { 'Content-Type': 'application/json' }
       });
-
+      alert("You have successfully registered.")
       navigate('/');
     } catch (error) {
       const errMsg = error.response?.data?.errors;
@@ -168,6 +203,8 @@ export function Register() {
   return (
     <div style={formStyle}>
       <h2>Register</h2>
+
+      {/*Form to handle registration detail submissions*/}
       <form onSubmit={handleSubmit}>
         <InputField
           type="text"
@@ -196,21 +233,55 @@ export function Register() {
           value={email}
           onChange={e => setEmail(e.target.value)}
           error={errors.email}
-        />
-        <InputField
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          error={errors.password}
-        />
-        <InputField
-          type="password"
-          placeholder="Confirm password"
-          value={confirmPassword}
-          onChange={e => setConfirmPassword(e.target.value)}
-          error={errors.confirmPassword}
-        />
+        /> 
+        <div style={{ position: 'relative' }}>
+          <InputField
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            error={errors.password}
+          />
+
+          {/*Ability to show and hide password */}
+          <div
+              onClick={() => setVisible(!visible)}
+              style={{
+              position: 'absolute',
+              top: '50%',
+              right: '-10px',
+              transform: 'translateY(-50%)',
+              cursor: 'pointer',
+              color: '#888'
+              }}
+          >
+              {visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+          </div>
+        </div>
+        <div style={{ position: 'relative' }}>
+          <InputField
+            type="password"
+            placeholder="Confirm password"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            error={errors.confirmPassword}
+          />
+
+          {/**Ability to show and hide password */}
+          <div
+              onClick={() => setVisible(!visible)}
+              style={{
+              position: 'absolute',
+              top: '50%',
+              right: '-10px',
+              transform: 'translateY(-50%)',
+              cursor: 'pointer',
+              color: '#888'
+              }}
+          >
+              {visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+          </div>
+        </div>
         <button type="submit" style={buttonStyle}>Register</button>
       </form>
       <p>
@@ -246,30 +317,45 @@ function App() {
 
   // The list of all the frontend routes
   return (
-    <div>
-      <nav className="nav-tabs">
-        <Link to="/characters">All Characters</Link>
-        <Link to="/user/characters">Saved Characters</Link>
-        <Link to="/account">Account Profile</Link>
-        {user && <Link to="/logout">Log out</Link>}
-        {!user && <Link to="/">Login</Link>}
-    
-      </nav>
-
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/registration" element={<Register />} />
-        <Route path="/characters" element={<Characters />} />
-        <Route path="/user/characters" element={<ProtectedRoute><SavedCharacters /></ProtectedRoute>} />
-        <Route path="/account" element={<ProtectedRoute><AccountProfile /></ProtectedRoute>} />
-        <Route path="/characters/:characterId" element={
-        <ProtectedRoute>
-          <CharacterProfile />
-        </ProtectedRoute>
-        } />
-      </Routes>
+      <>
+      {user && (
+        <div style={{
+          position: 'fixed',
+          top: 10,
+          right: 10,
+          padding: '8px 12px',
+          borderRadius: 5,
+          fontWeight: 'bold',
+          zIndex: 9999
+        }}>
+      Hello, {user.username}
     </div>
+      )}
+      <div>
+        <nav className="nav-tabs">
+          <Link to="/characters">All Characters</Link>
+          <Link to="/user/characters">Saved Characters</Link>
+          <Link to="/account">Account Profile</Link>
+          {user && <Link to="/logout">Log out</Link>}
+          {!user && <Link to="/">Login</Link>}
+      
+        </nav>
+
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/logout" element={<Logout />} />
+          <Route path="/registration" element={<Register />} />
+          <Route path="/characters" element={<Characters />} />
+          <Route path="/user/characters" element={<ProtectedRoute><SavedCharacters /></ProtectedRoute>} />
+          <Route path="/account" element={<ProtectedRoute><AccountProfile /></ProtectedRoute>} />
+          <Route path="/characters/:characterId" element={
+          <ProtectedRoute>
+            <CharacterProfile />
+          </ProtectedRoute>
+          } />
+        </Routes>
+      </div>
+    </>
   );
 }
 
