@@ -312,13 +312,28 @@ function InputField({ type, placeholder, value, onChange, error }) {
 }
 
 function App() {
-  // Get user from local storage
-  const { user } = useAuth();
+
+  // Get user from session storage
+  const storedUser = JSON.parse(sessionStorage.getItem("user"));  
+  
+  const [firstName, setFirstName] = useState(null);
+
+  // Getting the details of the user
+  useEffect(() => {
+  axios.get(`http://${process.env.REACT_APP_API_URL}/details/`, {headers: {'username': storedUser.username}})
+      .then(response => {
+          const data = response.data.message;
+          setFirstName(data[2]);
+      })
+      .catch(error => {
+          console.error('Error fetching characters:', error);
+      });
+  }, []);
 
   // The list of all the frontend routes
   return (
       <>
-      {user && (
+      {firstName && (
         <div style={{
           position: 'fixed',
           top: 10,
@@ -328,7 +343,7 @@ function App() {
           fontWeight: 'bold',
           zIndex: 9999
         }}>
-      Hello, {user.username}
+      Welcome {firstName}!
     </div>
       )}
       <div>
@@ -336,8 +351,8 @@ function App() {
           <Link to="/characters">All Characters</Link>
           <Link to="/user/characters">Saved Characters</Link>
           <Link to="/account">Account Profile</Link>
-          {user && <Link to="/logout">Log out</Link>}
-          {!user && <Link to="/">Login</Link>}
+          {storedUser && <Link to="/logout">Log out</Link>}
+          {!storedUser && <Link to="/">Login</Link>}
       
         </nav>
 

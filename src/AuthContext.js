@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
         'Content-Type': 'application/json'
       }
     });                             
-    // Resets the user to null and clears the local storage
+    // Resets the user to null and clears the session storage
     setUser(null);
     sessionStorage.removeItem("user");  
     navigate('/');      // redirect to homepage
