@@ -318,7 +318,10 @@ function App() {
 
   // Getting the details of the user
   useEffect(() => {
-    if (!user) return
+    if (!user) {
+      setFirstName(null);
+      return
+    }
     axios.get(`http://${process.env.REACT_APP_API_URL}/details/`, {headers: {'username': user.username}})
         .then(response => {
             const data = response.data.message;
