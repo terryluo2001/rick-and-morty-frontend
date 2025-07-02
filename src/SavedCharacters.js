@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { useAuth } from './AuthContext';      
+import axios from 'axios';   
 
 // Used to fetch the list of characters
 function SavedCharacters() {
 
-    const { user } = useAuth();
+    const user = JSON.parse(sessionStorage.getItem("user"));
     const [favouriteCharacters, setFavouriteCharacters] = useState([])
     
     // Calling the favourites and filtering the rick and morty api to get a list of the details of favourites
@@ -23,7 +22,7 @@ function SavedCharacters() {
             .catch(error => {
                 console.error('Error fetching characters:', error);
             });
-    }, [user]);
+    }, []);
 
     return (
         <div>

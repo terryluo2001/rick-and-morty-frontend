@@ -1,9 +1,8 @@
 // ProtectedRoute.js
 import { Navigate } from "react-router-dom";
-import { useAuth } from "./AuthContext";
 
 export default function ProtectedRoute({ children }) {
-  const { user } = useAuth();
+  const user = JSON.parse(sessionStorage.getItem("user"));
 
   if (!user) {
     // If not logged in, redirect to login

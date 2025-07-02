@@ -57,7 +57,7 @@ export function Login() {
 
   // Auto-redirect if already logged in
   useEffect(() => {
-    if (user) {
+    if (user && window.location.pathname === '/') {
       navigate('/characters'); // or your protected route
     }
   }, [user, navigate]);

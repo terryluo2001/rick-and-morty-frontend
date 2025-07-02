@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
-import axios from 'axios';
-import { useAuth } from './AuthContext';    
+import axios from 'axios'; 
 
 // Used to fetch the list of characters
 function AccountProfile() {
     const [accountDetails, setAccountDetails] = useState(null);
-    const { user } = useAuth();
+    const user = JSON.parse(sessionStorage.getItem("user"));
     const [visible, setVisible] = useState(true);
     const [errors, setErrors] = useState({});
 
@@ -34,24 +33,21 @@ function AccountProfile() {
 
     // Getting the details of the user
     useEffect(() => {
-    if (!user) return
     axios.get(`http://${process.env.REACT_APP_API_URL}/details/`, {headers: {'username': user.username}})
         .then(response => {
             const data = response.data.message;
-            console.log(data);
             const userObj = {
                 username: data[1],
                 firstname: data[2],
                 lastname: data[3],
                 email: data[5]
             };
-            console.log(userObj);
             setAccountDetails(userObj);
         })
         .catch(error => {
             console.error('Error fetching characters:', error);
         });
-    }, [user]);
+    }, []);
 
     // Updating the first name, last name and email
     const handleUpdateProfile = async () => {

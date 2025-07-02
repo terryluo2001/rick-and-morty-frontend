@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from './AuthContext';    
 
 // Used to fetch the list of characters
 function Characters() {
 
     const [characters, setCharacters] = useState([])
     const [favouriteCharacters, setFavouriteCharacters] = useState([])
-    const {user} = useAuth();
+    const user = JSON.parse(sessionStorage.getItem("user"));
     
     //Calling the backend to add the character to the favourites page of the user and also change the button to 'add to favourites'
     const handleAddToFavourites = async(id) => {
@@ -42,7 +41,7 @@ function Characters() {
         .catch(error => {
             console.error('Error fetching characters:', error);
         });
-    }, [user]);
+    }, []);
 
     // Fetching all the characters of Rick and Morty
     useEffect(() => {
