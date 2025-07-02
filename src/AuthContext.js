@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
   const navigate = useNavigate(); // for redirecting after login
   // Restore user from localStorage on page load
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = sessionStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
@@ -31,8 +31,7 @@ export function AuthProvider({ children }) {
       if (response.data.message === 'Login successful') {
 
         setUser(username);
-        console.log(username);
-        localStorage.setItem("user", JSON.stringify(username));
+        sessionStorage.setItem("user", JSON.stringify(username));
         sessionStorage.setItem("session_id", JSON.stringify(response.data.session_id));
         navigate('/characters'); // redirect to a protected route
         return { success: true, message: 'Login successful' };
@@ -62,7 +61,7 @@ export function AuthProvider({ children }) {
     });                             
     // Resets the user to null and clears the local storage
     setUser(null);
-    localStorage.removeItem("user");  
+    sessionStorage.removeItem("user");  
     navigate('/');      // redirect to homepage
   };
 

@@ -4,7 +4,8 @@ import axios from 'axios';
 // Used to fetch the list of characters
 function AccountProfile() {
     const [accountDetails, setAccountDetails] = useState(null);
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const storedUser = JSON.parse(sessionStorage.getItem("user"));
+    const [errors, setErrors] = useState({});
 
     // Form data for the things we can choose   
     const [formData, setFormData] = useState({
@@ -48,75 +49,79 @@ function AccountProfile() {
         });
     }, []);
 
-    // Updating the information
+    // Updating the first name, last name and email
     const handleUpdateProfile = async () => {
+        const newErrors = {};
 
-        if (!formData.firstname || !formData.lastname || !formData.email) {
-            alert('Please fill in all required fields: First Name, Last Name, and Email.');
+        if (!formData.firstname) newErrors.firstname = 'First name is required';
+        if (!formData.lastname) newErrors.lastname = 'Last name is required';
+        if (!formData.email) newErrors.email = 'Email is required';
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             return;
         }
-        // Prepare update data
+
         const updateData = {
             username: storedUser.username,
             firstname: formData.firstname,
             lastname: formData.lastname,
             email: formData.email,
         };
+
         try {
-            // Call backend API to update user info (example URL)
             await axios.post('http://127.0.0.1:8000/update_profile/', updateData, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+            headers: { 'Content-Type': 'application/json' }
             });
 
-            // Update UI state locally after successful update
-            setAccountDetails(prev => ({
-            ...prev,
-            ...updateData
-            }));
-
+            setAccountDetails(prev => ({ ...prev, ...updateData }));
+            setErrors({});
             alert('Profile updated successfully');
         } catch (error) {
-            console.error('Update failed:', error.response?.data || error.message);
-            alert('Failed to update profile.');
+            const errMsg = error.response?.data?.errors;
+            if (errMsg) {
+                const newErrors = {};
+                if ('email' in errMsg) newErrors.email = 'Email is taken';
+                setErrors(prev => ({ ...prev, ...newErrors }));
+            }
         }
     };
 
-    // Updating the information
-    const handleUpdatePassword = async () => {
 
-        if (!formData.password || !formData.confirmPassword) {
-            alert('Please enter a password');
+    // Updating the password
+    const handleUpdatePassword = async () => {
+        const newErrors = {};
+
+        if (!formData.password) newErrors.password = 'Password is required';
+        if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm password';
+        if (formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'Passwords do not match';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(prev => ({ ...prev, ...newErrors }));
             return;
         }
 
-        if (formData.password || formData.confirmPassword) {
-            if (formData.password !== formData.confirmPassword) {
-                alert("Passwords do not match.");
-                return;
-            }
-        }
-
-        // Prepare update data
         const updatePassword = {
             username: storedUser.username,
             password: formData.password
         };
 
         try {
-            // Call backend API to update user info (example URL)
             await axios.post('http://127.0.0.1:8000/update_password/', updatePassword, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+            headers: { 'Content-Type': 'application/json' }
             });
+
+            setErrors({});
             alert('Password updated successfully');
         } catch (error) {
-            console.error('Failed to update password:', error.response?.data || error.message);
-            alert('Failed to update password.');
+            const errData = error.response?.data?.errors || {};
+            setErrors(prev => ({ ...prev, ...errData }));
+            console.error('Failed to update password:', errData || error.message);
         }
     };
+
 
     return (
         <div>
@@ -130,63 +135,110 @@ function AccountProfile() {
                     <div style={{ padding: '8px 0' }}>{accountDetails.username}</div>
                 </div>
 
+                {/*Form to fill out first name*/}
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px' }}><strong>First Name:</strong></label>
+                    <label style={{ display: 'block', marginBottom: '8px' }}>
+                        <strong>First Name:</strong>
+                    </label>
                     <input
-                    type="text"
-                    value={formData.firstname}
-                    onChange={(e) => setFormData({ ...formData, firstname: e.target.value })}
-                    style={inputStyle}
+                        type="text"
+                        value={formData.firstname}
+                        onChange={(e) => setFormData({ ...formData, firstname: e.target.value })}
+                        style={{
+                        ...inputStyle,
+                        borderColor: errors.firstname ? 'red' : '#ccc'
+                        }}
                     />
+                    {errors.firstname && (
+                        <div style={{ color: 'red', fontSize: '0.8em' }}>{errors.firstname}</div>
+                    )}
                 </div>
 
+                {/*Form to fill out last name*/}
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px' }}><strong>Last Name:</strong></label>
+                    <label style={{ display: 'block', marginBottom: '8px' }}>
+                        <strong>Last Name:</strong>
+                    </label>
                     <input
-                    type="text"
-                    value={formData.lastname}
-                    onChange={(e) => setFormData({ ...formData, lastname: e.target.value })}
-                    style={inputStyle}
+                        type="text"
+                        value={formData.lastname}
+                        onChange={(e) => setFormData({ ...formData, lastname: e.target.value })}
+                        style={{
+                        ...inputStyle,
+                        borderColor: errors.lastname ? 'red' : '#ccc'
+                        }}
                     />
+                    {errors.lastname && (
+                        <div style={{ color: 'red', fontSize: '0.8em' }}>{errors.lastname}</div>
+                    )}
                 </div>
-
+                
+                {/*Form to fill out email*/}
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px' }}><strong>Email:</strong></label>
+                    <label style={{ display: 'block', marginBottom: '8px' }}>
+                        <strong>Email:</strong>
+                    </label>
                     <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    style={inputStyle}
+                        type="text"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        style={{
+                            ...inputStyle,
+                            borderColor: errors.email ? 'red' : '#ccc'
+                        }}
                     />
+                    {errors.email && (
+                        <div style={{ color: 'red', fontSize: '0.8em' }}>{errors.email}</div>
+                    )}
                 </div>
-
+                
                 <button onClick={handleUpdateProfile} style={buttonStyle}>
                     Update
                 </button>
 
                 {/* Updating the new password */}
                 <div style={{ marginBottom: '15px' }}>
+
+                    {/*Form to fill out password*/}
                     <label style={{ display: 'block', marginBottom: '8px' }}>
                         <strong>New password:</strong>
                     </label>
-                    <input
-                        type="password"
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        style={inputStyle}
-                    />
+                    <div style={{ marginBottom: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px' }}>
+                            <strong>Password</strong>
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.password}
+                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            style={{
+                            ...inputStyle,
+                            borderColor: errors.password ? 'red' : '#ccc'
+                            }}
+                        />
+                        {errors.password && (
+                            <div style={{ color: 'red', fontSize: '0.8em' }}>{errors.firstname}</div>
+                        )}
                     </div>
-
-                    <div style={{ marginBottom: '25px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px' }}>
-                        <strong>Confirm new password:</strong>
-                    </label>
-                    <input
-                        type="password"
-                        value={formData.confirmPassword}
-                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                        style={inputStyle}
-                    />
+                    
+                    {/*Form to confirm password */}
+                    <div style={{ marginBottom: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px' }}>
+                            <strong>Confirm New Password:</strong>
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.confirmPassword}
+                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                            style={{
+                            ...inputStyle,
+                            borderColor: errors.confirmPassword ? 'red' : '#ccc'
+                            }}
+                        />
+                        {errors.confirmPassword && (
+                            <div style={{ color: 'red', fontSize: '0.8em' }}>{errors.confirmPassword}</div>
+                        )}
+                    </div>
                 </div>
                 <button onClick={handleUpdatePassword} style={buttonStyle}>
                     Change Password

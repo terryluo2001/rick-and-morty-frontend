@@ -118,62 +118,124 @@ export function Logout() {
 }
 
 export function Register() {
-
   const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');  
   const [confirmPassword, setConfirmPassword] = useState('');
-  const navigate = useNavigate(); // for redirecting after login         
-                                  
+  const [errors, setErrors] = useState({}); // Error state
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Checking if a username and password is given
-    if (username && password && firstName && lastName && email && password === confirmPassword) {
-      try {
-        await axios.post('http://127.0.0.1:8000/register/', {
-          username: username,
-          password: password,
-          firstname: firstName,
-          lastname: lastName,
-          email: email,
-        }, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        navigate('/');
-      } catch (error) {
-        console.error("Registration failed:", error.response?.data || error.message);
+
+    // Error for putting the dictionary
+    const newErrors = {};
+    if (!firstName) newErrors.firstName = 'First name required';
+    if (!lastName) newErrors.lastName = 'Last name required';
+    if (!username) newErrors.username = 'Username required';
+    if (!email) newErrors.email = 'Email required';
+    if (!password) newErrors.password = 'Password required';
+    if (password !== confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
+    try {
+      await axios.post('http://127.0.0.1:8000/register/', {
+        username,
+        password,
+        firstname: firstName,
+        lastname: lastName,
+        email
+      }, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      navigate('/');
+    } catch (error) {
+      const errMsg = error.response?.data?.errors;
+      if (errMsg) {
+        const newErrors = {};
+        if ('username' in errMsg) newErrors.username = 'Username is taken';
+        if ('email' in errMsg) newErrors.email = 'Email is taken';
+        setErrors(prev => ({ ...prev, ...newErrors }));
       }
-    } 
-    else if (password !== confirmPassword) {
-      alert('Make sure both passwords are the same')
-    }
-    else {
-      alert('Please fill in all required fields: Username, First Name, Password, Last Name, and Email.')
     }
   };
 
-  // Returns the form to enter the registration details
   return (
     <div style={formStyle}>
       <h2>Register</h2>
       <form onSubmit={handleSubmit}>
-        <input type="text" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} style={inputStyle} />
-        <input type="text" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} style={inputStyle} />
-        <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} style={inputStyle} />
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} />
-        <input type="password" placeholder="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} style={inputStyle} />
+        <InputField
+          type="text"
+          placeholder="First name"
+          value={firstName}
+          onChange={e => setFirstName(e.target.value)}
+          error={errors.firstName}
+        />
+        <InputField
+          type="text"
+          placeholder="Last name"
+          value={lastName}
+          onChange={e => setLastName(e.target.value)}
+          error={errors.lastName}
+        />
+        <InputField
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
+          error={errors.username}
+        />
+        <InputField
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          error={errors.email}
+        />
+        <InputField
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          error={errors.password}
+        />
+        <InputField
+          type="password"
+          placeholder="Confirm password"
+          value={confirmPassword}
+          onChange={e => setConfirmPassword(e.target.value)}
+          error={errors.confirmPassword}
+        />
         <button type="submit" style={buttonStyle}>Register</button>
       </form>
       <p>
         Already have an account?{" "}
         <Link to="/" style={linkStyle}>Login</Link>
       </p>
+    </div>
+  );
+}
+
+// 🔧 Reusable input component with error label
+function InputField({ type, placeholder, value, onChange, error }) {
+  return (
+    <div style={{ marginBottom: '15px' }}>
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        style={{
+          ...inputStyle,
+          borderColor: error ? 'red' : '#ccc'
+        }}
+      />
+      {error && <div style={{ color: 'red', fontSize: '0.8em', marginTop: '4px' }}>{error}</div>}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import axios from 'axios';
 function SavedCharacters() {
 
     const [favouriteCharacters, setFavouriteCharacters] = useState([])
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const storedUser = JSON.parse(sessionStorage.getItem("user"));
     
     // Calling the favourites and filtering the rick and morty api to get a list of the details of favourites
     useEffect(() => {

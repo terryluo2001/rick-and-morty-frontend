@@ -2,7 +2,7 @@
 
 Please follow these steps in order to run the frontend
 
-1. First install all the node modules in package.json which are dependencies required to run the application.
+1. Go to the root folder. First install all the node modules in package.json which are dependencies required to run the application.
 
 Run: npm install on the terminal
 

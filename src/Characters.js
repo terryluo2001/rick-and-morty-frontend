@@ -7,7 +7,7 @@ function Characters() {
 
     const [characters, setCharacters] = useState([])
     const [favouriteCharacters, setFavouriteCharacters] = useState([])
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const storedUser = JSON.parse(sessionStorage.getItem("user"));
     
     //Calling the backend to add the character to the favourites page of the user and also change the button to 'add to favourites'
     const handleAddToFavourites = async(id) => {
