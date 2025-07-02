@@ -314,12 +314,12 @@ function InputField({ type, placeholder, value, onChange, error }) {
 function App() {
 
   // Get user from session storage
-  const storedUser = JSON.parse(sessionStorage.getItem("user"));  
-  
+  const storedUser = JSON.parse(sessionStorage.getItem("user"));
   const [firstName, setFirstName] = useState(null);
 
   // Getting the details of the user
   useEffect(() => {
+  if (!storedUser) return;
   axios.get(`http://${process.env.REACT_APP_API_URL}/details/`, {headers: {'username': storedUser.username}})
       .then(response => {
           const data = response.data.message;
@@ -351,8 +351,11 @@ function App() {
           <Link to="/characters">All Characters</Link>
           <Link to="/user/characters">Saved Characters</Link>
           <Link to="/account">Account Profile</Link>
-          {storedUser && <Link to="/logout">Log out</Link>}
-          {!storedUser && <Link to="/">Login</Link>}
+          {storedUser ? (
+            <Link to="/logout">Log out</Link>
+          ) : (
+            <Link to="/">Login</Link>
+          )}
       
         </nav>
 
