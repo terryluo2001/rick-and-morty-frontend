@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { EyeInvisibleOutlined, EyeOutlined } from "@ant-design/icons";
 import axios from 'axios';
+import { useAuth } from './AuthContext';    
 
 // Used to fetch the list of characters
 function AccountProfile() {
     const [accountDetails, setAccountDetails] = useState(null);
-    const storedUser = JSON.parse(sessionStorage.getItem("user"));  
+    const { user } = useAuth();
     const [visible, setVisible] = useState(true);
     const [errors, setErrors] = useState({});
 
@@ -33,7 +34,7 @@ function AccountProfile() {
 
     // Getting the details of the user
     useEffect(() => {
-    axios.get(`http://${process.env.REACT_APP_API_URL}/details/`, {headers: {'username': storedUser.username}})
+    axios.get(`http://${process.env.REACT_APP_API_URL}/details/`, {headers: {'username': user.username}})
         .then(response => {
             const data = response.data.message;
             console.log(data);
@@ -49,7 +50,7 @@ function AccountProfile() {
         .catch(error => {
             console.error('Error fetching characters:', error);
         });
-    }, []);
+    }, [user]);
 
     // Updating the first name, last name and email
     const handleUpdateProfile = async () => {
@@ -67,7 +68,7 @@ function AccountProfile() {
         }
 
         const updateData = {
-            username: storedUser.username,
+            username: user.username,
             firstname: formData.firstname,
             lastname: formData.lastname,
             email: formData.email,
@@ -109,7 +110,7 @@ function AccountProfile() {
         }
 
         const updatePassword = {
-            username: storedUser.username,
+            username: user.username,
             password: formData.password
         };
 

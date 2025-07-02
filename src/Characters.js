@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from './AuthContext';    
 
 // Used to fetch the list of characters
 function Characters() {
 
     const [characters, setCharacters] = useState([])
     const [favouriteCharacters, setFavouriteCharacters] = useState([])
-    const storedUser = JSON.parse(sessionStorage.getItem("user"));
+    const {user} = useAuth();
     
     //Calling the backend to add the character to the favourites page of the user and also change the button to 'add to favourites'
     const handleAddToFavourites = async(id) => {
-        await axios.post(`http://${process.env.REACT_APP_API_URL}/update_favourites/`, {userData: storedUser, 'character_id': id})  
+        await axios.post(`http://${process.env.REACT_APP_API_URL}/update_favourites/`, {userData: user, 'character_id': id})  
         const charToAdd = characters.find(c => c.id === id);
         if (charToAdd) {
             setFavouriteCharacters(prevFavourites => [...prevFavourites, charToAdd]);
@@ -20,8 +21,8 @@ function Characters() {
 
     //Calling the backend to remove the character to the favourites page of the user and also change the button to 'add to favourites'
     const handleRemovefromFavourites = async(id) => {
-        if (!storedUser) return;
-        await axios.post(`http://${process.env.REACT_APP_API_URL}/remove_favourites/`, {userData: storedUser, 'character_id': id})  
+        if (!user) return;
+        await axios.post(`http://${process.env.REACT_APP_API_URL}/remove_favourites/`, {userData: user, 'character_id': id})  
         setFavouriteCharacters(prevFavourites =>
             prevFavourites.filter(char => char.id !== id)
         );
@@ -29,8 +30,8 @@ function Characters() {
 
     // Fetching all the favourite characters of Rick and Morty
     useEffect(() => {
-        if (!storedUser) return;
-        axios.get(`http://${process.env.REACT_APP_API_URL}/fetch_favourites/`, {headers: {userData: storedUser.username}})
+        if (!user) return;
+        axios.get(`http://${process.env.REACT_APP_API_URL}/fetch_favourites/`, {headers: {userData: user.username}})
         .then(response => {
             const favCharacterIDList = response.data.favourites
             axios.get('https://rickandmortyapi.com/api/character')
@@ -41,7 +42,7 @@ function Characters() {
         .catch(error => {
             console.error('Error fetching characters:', error);
         });
-    }, []);
+    }, [user]);
 
     // Fetching all the characters of Rick and Morty
     useEffect(() => {
@@ -89,7 +90,7 @@ function Characters() {
                         </Link>
 
                         { /* Change the button design based on if the Ricky and Morty character is a favourite*/}
-                        {storedUser && !favouriteCharacters.some(fav => fav.id === char.id) && (
+                        {user && !favouriteCharacters.some(fav => fav.id === char.id) && (
                             <button 
                                 onClick={() => handleAddToFavourites(char.id)} 
                                 style={{ 
@@ -107,7 +108,7 @@ function Characters() {
                         }
 
                         { /* This is if it's already a favourite in which case it will ask you to remove from favourites */}
-                        {storedUser && favouriteCharacters.some(fav => fav.id === char.id) && (
+                        {user && favouriteCharacters.some(fav => fav.id === char.id) && (
                             <button 
                                 onClick={() => handleRemovefromFavourites(char.id)} 
                                 style={{ 

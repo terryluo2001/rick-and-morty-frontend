@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from './AuthContext';      
 
 // Used to fetch the list of characters
 function SavedCharacters() {
 
+    const { user } = useAuth();
     const [favouriteCharacters, setFavouriteCharacters] = useState([])
-    const storedUser = JSON.parse(sessionStorage.getItem("user"));
     
     // Calling the favourites and filtering the rick and morty api to get a list of the details of favourites
     useEffect(() => {
-        axios.get(`http://${process.env.REACT_APP_API_URL}/fetch_favourites/`, {headers: {userData: storedUser.username}})
+        axios.get(`http://${process.env.REACT_APP_API_URL}/fetch_favourites/`, {headers: {userData: user.username}})
             .then(response => {
                 const favCharacterIDList = response.data.favourites
                 console.log(favCharacterIDList);
@@ -22,7 +23,7 @@ function SavedCharacters() {
             .catch(error => {
                 console.error('Error fetching characters:', error);
             });
-    }, [storedUser.username]);
+    }, [user]);
 
     return (
         <div>

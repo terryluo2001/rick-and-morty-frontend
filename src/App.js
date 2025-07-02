@@ -312,23 +312,22 @@ function InputField({ type, placeholder, value, onChange, error }) {
 }
 
 function App() {
-
-  // Get user from session storage
-  const storedUser = JSON.parse(sessionStorage.getItem("user"));
+  // Get user from local storage
+  const { user } = useAuth();
   const [firstName, setFirstName] = useState(null);
 
   // Getting the details of the user
   useEffect(() => {
-  if (!storedUser) return;
-  axios.get(`http://${process.env.REACT_APP_API_URL}/details/`, {headers: {'username': storedUser.username}})
-      .then(response => {
-          const data = response.data.message;
-          setFirstName(data[2]);
-      })
-      .catch(error => {
-          console.error('Error fetching characters:', error);
-      });
-  }, []);
+    if (!user) return
+    axios.get(`http://${process.env.REACT_APP_API_URL}/details/`, {headers: {'username': user.username}})
+        .then(response => {
+            const data = response.data.message;
+            setFirstName(data[2]);
+        })
+        .catch(error => {
+            console.error('Error fetching characters:', error);
+        });
+  }, [user]);
 
   // The list of all the frontend routes
   return (
@@ -343,7 +342,7 @@ function App() {
           fontWeight: 'bold',
           zIndex: 9999
         }}>
-      Welcome {firstName}!
+      Hello, {firstName}
     </div>
       )}
       <div>
@@ -351,11 +350,8 @@ function App() {
           <Link to="/characters">All Characters</Link>
           <Link to="/user/characters">Saved Characters</Link>
           <Link to="/account">Account Profile</Link>
-          {storedUser ? (
-            <Link to="/logout">Log out</Link>
-          ) : (
-            <Link to="/">Login</Link>
-          )}
+          {user && <Link to="/logout">Log out</Link>}
+          {!user && <Link to="/">Login</Link>}
       
         </nav>
 
