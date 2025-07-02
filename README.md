@@ -12,4 +12,7 @@ The files written for the frontend are App.js, AuthContext.js, CharacterProfiles
 
 3. Also in order to run the website properly, the backend also needs to be initiated, please follow the README.md file in rick-and-morty-backend.
 
+4. The environment variables file is used to configure the API url which calls the backend, feel free to change it to your preferred
+URL to call the backend.
+
 Enjoy the app!
