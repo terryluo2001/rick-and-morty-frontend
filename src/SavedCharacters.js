@@ -10,7 +10,7 @@ function SavedCharacters() {
     
     // Calling the favourites and filtering the rick and morty api to get a list of the details of favourites
     useEffect(() => {
-        axios.get(`http://${process.env.REACT_APP_API_URL}/fetch_favourites/`, {headers: {userData: user.username}})
+        axios.get(`http://${process.env.REACT_APP_API_URL}/fetch_favourites/`, {headers: {: user.username}})
             .then(response => {
                 const favCharacterIDList = response.data.favourites
                 console.log(favCharacterIDList);
