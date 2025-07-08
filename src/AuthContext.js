@@ -43,10 +43,12 @@ export function AuthProvider({ children }) {
 
       // Incorrect username and password
       } else {
+        console.log(response);
         return { success: false, message: response.data.message };
       }
     }
     catch (error) {
+      console.log(error);
       console.error("Login failed:", error.response?.data || error.message);
     }
   };

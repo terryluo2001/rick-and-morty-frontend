@@ -67,7 +67,6 @@ export function Login() {
     // Checking if a username and password is given
     if (username && password) {
       const result = await login({ username, password }); // Save user to context
-      console.log(result);
       if (!result.success) {
         setError(result.message);
       }
